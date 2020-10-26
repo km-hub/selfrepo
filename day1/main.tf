@@ -1,68 +1,48 @@
-# DB instance
-resource "aws_db_instance" "default" {
-  allocated_storage    = 20
-  storage_type         = "gp2"
-  engine               = "mysql"
-  engine_version       = "5.7"
-  instance_class       = "db.t2.micro"
-  name                 = "mydb"
-  username             = "master"
-  password             = "helloworld"
-  parameter_group_name = "default.mysql5.7"
-
-}
-#Subnet Group
-resource "aws_db_subnet_group" "default" {
-  name       = "main"
-  #subnet_ids = [aws_subnet.frontend.id, aws_subnet.backend.id]
-  subnet_ids = [aws_subnet.all.subnet_ids]
-  tags = {
-    Name = "My DB subnet group"
-  }
+provider "aws" {
+  region = "us-west-2"
 }
 
-#Parameter groups
-resource "aws_db_parameter_group" "default" {
-  name   = "rds-pg"
-  family = "mysql5.6"
-
-  parameter {
-    name  = "character_set_server"
-    value = "utf8"
-  }
-
-  parameter {
-    name  = "character_set_client"
-    value = "utf8"
-  }
+resource "aws_db_instance" "my-test-sql" {
+  instance_class          = "${var.db_instance}"
+  engine                  = "mysql"
+  engine_version          = "5.7"
+  multi_az                = true
+  storage_type            = "gp2"
+  allocated_storage       = 20
+  name                    = "mytestrds"
+  username                = "admin"
+  password                = "admin123"
+  apply_immediately       = "true"
+  backup_retention_period = 10
+  backup_window           = "09:46-10:16"
+  db_subnet_group_name    = "${aws_db_subnet_group.my-rds-db-subnet.name}"
+  vpc_security_group_ids  = ["${aws_security_group.my-rds-sg.id}"]
 }
 
-#Option group
-resource "aws_db_option_group" "example" {
-  name                     = "option-group-test-terraform"
-  option_group_description = "Terraform Option Group"
-  engine_name              = "sqlserver-ee"
-  major_engine_version     = "11.00"
+resource "aws_db_subnet_group" "my-rds-db-subnet" {
+  name       = "my-rds-db-subnet"
+  subnet_ids = ["${var.rds_subnet1}", "${var.rds_subnet2}"]
+}
 
-  option {
-    option_name = "Timezone"
+resource "aws_security_group" "my-rds-sg" {
+  name   = "my-rds-sg"
+  vpc_id = "${var.vpc_id}"
+}
 
-    option_settings {
-      name  = "TIME_ZONE"
-      value = "UTC"
-    }
-  }
+resource "aws_security_group_rule" "my-rds-sg-rule" {
+  from_port         = 3306
+  protocol          = "tcp"
+  security_group_id = "${aws_security_group.my-rds-sg.id}"
+  to_port           = 3306
+  type              = "ingress"
+  cidr_blocks       = ["0.0.0.0/0"]
+}
 
-  option {
-    option_name = "SQLSERVER_BACKUP_RESTORE"
-
-    option_settings {
-      name  = "IAM_ROLE_ARN"
-      value = aws_iam_role.example.arn
-    }
-  }
-
-  option {
-    option_name = "TDE"
-  }
+resource "aws_security_group_rule" "outbound_rule" {
+  from_port         = 0
+  protocol          = "-1"
+  security_group_id = "${aws_security_group.my-rds-sg.id}"
+  to_port           = 0
+  type              = "egress"
+  cidr_blocks       = ["0.0.0.0/0"]
 }
