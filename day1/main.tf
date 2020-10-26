@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_db_instance" "my-test-sql" {
-  instance_class          = "${var.db_instance}"
+  instance_class          = var.db_instance
   engine                  = "mysql"
   engine_version          = "5.7"
   multi_az                = true
