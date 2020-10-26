@@ -14,14 +14,14 @@ resource "aws_db_instance" "default" {
 #Subnet Group
 resource "aws_db_subnet_group" "default" {
   name       = "main"
-  subnet_ids = [aws_subnet.frontend.id, aws_subnet.backend.id]
-
+  #subnet_ids = [aws_subnet.frontend.id, aws_subnet.backend.id]
+  subnet_ids = [aws_subnet.all.subnet_ids]
   tags = {
     Name = "My DB subnet group"
   }
 }
 
-#Parameter group
+#Parameter groups
 resource "aws_db_parameter_group" "default" {
   name   = "rds-pg"
   family = "mysql5.6"
