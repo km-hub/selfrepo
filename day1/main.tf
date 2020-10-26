@@ -1,3 +1,7 @@
+provider "aws" {
+  region = "eu-west-1"
+}
+
 resource "aws_db_instance" "default" {
   allocated_storage    = 20
   storage_type         = "gp2"
