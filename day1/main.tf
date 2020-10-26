@@ -26,7 +26,7 @@ resource "aws_db_subnet_group" "my-rds-db-subnet" {
 
 resource "aws_security_group" "my-rds-sg" {
   name   = "my-rds-sg"
-  vpc_id = "${var.vpc_id}"
+  vpc_id = var.vpc_id
 }
 
 resource "aws_security_group_rule" "my-rds-sg-rule" {
